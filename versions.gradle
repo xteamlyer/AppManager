@@ -38,7 +38,7 @@ ext {
     sun_security_version = "1.1"
     swipe_refresh_version = "1.2.0-alpha01"
     unapkm_version = "1.2"
-    webkit_version = "1.9.0"
+    webkit_version = "1.10.0"
     zstd_version = "1.5.6-2"
 
     // Test dependencies
