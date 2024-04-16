@@ -36,7 +36,7 @@ jobs:
         run: ./gradlew packageReleaseUniversalApk
 
       - name: Store generated APK file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: AppManager
           path: ./app/build/outputs/apk_from_bundle/*
