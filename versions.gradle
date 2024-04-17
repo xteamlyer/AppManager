@@ -2,7 +2,7 @@
 
 ext {
     compile_sdk = 34
-    min_sdk = 21
+    min_sdk = 30
     target_sdk = 34
 
     // Gradle plugins
@@ -32,7 +32,7 @@ ext {
     refine_version = "4.4.0"
     room_version = "2.6.1"
     simplemagic_version = "1.17"
-    sora_editor_version = "0.22.1"
+    sora_editor_version = "0.22.2"
     speed_dial_version = "3.3.0"
     splashscreen_version = "1.0.1"
     sun_security_version = "1.1"
