@@ -30,7 +30,7 @@ ext {
     material_version = "1.11.0"
     preferences_version = "1.2.1"
     refine_version = "4.4.0"
-    room_version = "2.6.1"
+    room_version = "2.7.0-alpha01"
     simplemagic_version = "1.17"
     sora_editor_version = "0.22.2"
     speed_dial_version = "3.3.0"
