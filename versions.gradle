@@ -27,7 +27,7 @@ ext {
     jb_annotation_version = "24.1.0" // Compile-only
     libadb_version = "3.0.0"
     libsu_version = "5.2.2"
-    material_version = "1.11.0"
+    material_version = "1.13.0-alpha01"
     preferences_version = "1.2.1"
     refine_version = "4.4.0"
     room_version = "2.6.1"
