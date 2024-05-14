@@ -13,7 +13,7 @@ ext {
     annotation_version = "1.8.0-rc01"
     androidx_core_version = "1.14.0-alpha01" // Added temporarily until appcompat migrates to it
     apksig_version = "4.4.0"
-    appcompat_version = "1.7.0-beta01"
+    appcompat_version = "1.7.0-rc01"
     arsclib_version = "ece5c8a43c"
     baksmali_version = "2.5.2"
     bouncycastle_version = "1.78.1"
