@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?><!DOCTYPE changelog SYSTEM "https://raw.githubusercontent.com/MuntashirAkon/AppManager/master/schema/changlelog.dtd">
 <changelog>
     <release
-        type="beta release"
-        version="v4.0.0-beta01"
-        code="436"
-        date="19 April 2024">
+        type="mod (release build)"
+        version="v4.0.2"
+        code="437"
+        date="20 April 2024">
         <note>
             Funding campaign dates have been updated as this is going to be the last campaign in
             many years.
@@ -157,9 +157,9 @@
     </release>
     <release
         type="alpha release"
-        version="v4.0.0-alpha02"
-        code="435"
-        date="18 September 2023">
+        version="v4.0.2"
+        code="437"
+        date="1 April 2024">
         <title type="medium">Main page</title>
         <improve title="Batch ops">Added an option to create a new profile in the “Add to profile” dialog</improve>
         <fix title="Batch ops">Fixed saving APKS with dependencies</fix>
