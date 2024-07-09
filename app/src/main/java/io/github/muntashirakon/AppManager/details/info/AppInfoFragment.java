@@ -60,7 +60,9 @@ import androidx.collection.ArrayMap;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.pm.PackageInfoCompat;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -165,7 +167,7 @@ import io.github.muntashirakon.io.Path;
 import io.github.muntashirakon.io.Paths;
 import io.github.muntashirakon.widget.SwipeRefreshLayout;
 
-public class AppInfoFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+public class AppInfoFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener, MenuProvider {
     public static final String TAG = "AppInfoFragment";
 
     private static final String PACKAGE_NAME_AURORA_STORE = "com.aurora.store";
@@ -198,6 +200,7 @@ public class AppInfoFragment extends Fragment implements SwipeRefreshLayout.OnRe
     private Future<?> mTagCloudFuture;
     private Future<?> mActionsFuture;
     private Future<?> mListFuture;
+    private Future<?> mMenuPreparationResult;
 
     private boolean mIsExternalApk;
     private int mLoadedItemCount;
@@ -214,7 +217,6 @@ public class AppInfoFragment extends Fragment implements SwipeRefreshLayout.OnRe
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
         mAppInfoModel = new ViewModelProvider(this).get(AppInfoViewModel.class);
         mMainModel = new ViewModelProvider(requireActivity()).get(AppDetailsViewModel.class);
     }
@@ -251,6 +253,7 @@ public class AppInfoFragment extends Fragment implements SwipeRefreshLayout.OnRe
         mVersionView = view.findViewById(R.id.version);
         mAdapter = new AppInfoRecyclerAdapter(requireContext());
         recyclerView.setAdapter(mAdapter);
+        mActivity.addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         // Set observer
         mMainModel.get(AppDetailsFragment.APP_INFO).observe(getViewLifecycleOwner(), appDetailsItems -> {
             mLoadedItemCount = 0;
@@ -341,53 +344,63 @@ public class AppInfoFragment extends Fragment implements SwipeRefreshLayout.OnRe
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+    public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         if (mMainModel != null && !mMainModel.isExternalApk()) {
             inflater.inflate(R.menu.fragment_app_info_actions, menu);
         }
     }
 
     @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
+    public void onPrepareMenu(@NonNull Menu menu) {
         if (mIsExternalApk) return;
+        MenuItem magiskHideMenu = menu.findItem(R.id.action_magisk_hide);
+        MenuItem magiskDenyListMenu = menu.findItem(R.id.action_magisk_denylist);
+        MenuItem openInTermuxMenu = menu.findItem(R.id.action_open_in_termux);
+        MenuItem runInTermuxMenu = menu.findItem(R.id.action_run_in_termux);
+        MenuItem batteryOptMenu = menu.findItem(R.id.action_battery_opt);
+        MenuItem sensorsMenu = menu.findItem(R.id.action_sensor);
+        MenuItem netPolicyMenu = menu.findItem(R.id.action_net_policy);
+        MenuItem installMenu = menu.findItem(R.id.action_install);
+        MenuItem optimizeMenu = menu.findItem(R.id.action_optimize);
+        mMenuPreparationResult = ThreadUtils.postOnBackgroundThread(() -> {
+            boolean magiskHideAvailable = MagiskHide.available();
+            boolean magiskDenyListAvailable = MagiskDenyList.available();
+            boolean rootAvailable = RunnerUtils.isRootAvailable();
+            if (ThreadUtils.isInterrupted()) {
+                return;
+            }
+            ThreadUtils.postOnMainThread(() -> {
+                if (magiskHideMenu != null) {
+                    magiskHideMenu.setVisible(magiskHideAvailable);
+                }
+                if (magiskDenyListMenu != null) {
+                    magiskDenyListMenu.setVisible(magiskDenyListAvailable);
+                }
+                if (openInTermuxMenu != null) {
+                    openInTermuxMenu.setVisible(rootAvailable);
+                }
+            });
+        });
         boolean isDebuggable;
         if (mApplicationInfo != null) {
             isDebuggable = (mApplicationInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
         } else isDebuggable = false;
-        MenuItem magiskHideMenu = menu.findItem(R.id.action_magisk_hide);
-        if (magiskHideMenu != null) {
-            magiskHideMenu.setVisible(MagiskHide.available());
-        }
-        MenuItem magiskDenyListMenu = menu.findItem(R.id.action_magisk_denylist);
-        if (magiskDenyListMenu != null) {
-            magiskDenyListMenu.setVisible(MagiskDenyList.available());
-        }
-        MenuItem openInTermuxMenu = menu.findItem(R.id.action_open_in_termux);
-        if (openInTermuxMenu != null) {
-            openInTermuxMenu.setVisible(RunnerUtils.isRootAvailable());
-        }
-        MenuItem runInTermuxMenu = menu.findItem(R.id.action_run_in_termux);
         if (runInTermuxMenu != null) {
             runInTermuxMenu.setVisible(isDebuggable);
         }
-        MenuItem batteryOptMenu = menu.findItem(R.id.action_battery_opt);
         if (batteryOptMenu != null) {
             batteryOptMenu.setVisible(SelfPermissions.checkSelfOrRemotePermission(ManifestCompat.permission.DEVICE_POWER));
         }
-        MenuItem sensorsMenu = menu.findItem(R.id.action_sensor);
         if (sensorsMenu != null) {
             sensorsMenu.setVisible(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
                     && SelfPermissions.checkSelfOrRemotePermission(ManifestCompat.permission.MANAGE_SENSORS));
         }
-        MenuItem netPolicyMenu = menu.findItem(R.id.action_net_policy);
         if (netPolicyMenu != null) {
             netPolicyMenu.setVisible(SelfPermissions.checkSelfOrRemotePermission(ManifestCompat.permission.MANAGE_NETWORK_POLICY));
         }
-        MenuItem installMenu = menu.findItem(R.id.action_install);
         if (installMenu != null) {
             installMenu.setVisible(Users.getUsersIds().length > 1 && SelfPermissions.canInstallExistingPackages());
         }
-        MenuItem optimizeMenu = menu.findItem(R.id.action_optimize);
         if (optimizeMenu != null) {
             optimizeMenu.setVisible(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
                     && (SelfPermissions.isSystemOrRootOrShell() || BuildConfig.APPLICATION_ID.equals(mInstallerPackageName)));
@@ -395,7 +408,7 @@ public class AppInfoFragment extends Fragment implements SwipeRefreshLayout.OnRe
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
         if (itemId == R.id.action_refresh_detail) {
             refreshDetails();
@@ -606,8 +619,15 @@ public class AppInfoFragment extends Fragment implements SwipeRefreshLayout.OnRe
                 DexOptDialog dialog = DexOptDialog.getInstance(new String[]{mPackageName});
                 dialog.show(getChildFragmentManager(), DexOptDialog.TAG);
             } else UIUtils.displayShortToast(R.string.only_works_in_root_or_adb_mode);
-        } else return super.onOptionsItemSelected(item);
+        } else return false;
         return true;
+    }
+
+    @Override
+    public void onMenuClosed(@NonNull Menu menu) {
+        if (mMenuPreparationResult != null) {
+            mMenuPreparationResult.cancel(true);
+        }
     }
 
     @Override
@@ -1538,7 +1558,7 @@ public class AppInfoFragment extends Fragment implements SwipeRefreshLayout.OnRe
         Intent fdroid_intent = new Intent(Intent.ACTION_VIEW);
         fdroid_intent.setData(Uri.parse("https://f-droid.org/packages/" + mPackageName));
         List<ResolveInfo> resolvedActivities = mPackageManager.queryIntentActivities(fdroid_intent, 0);
-        if (resolvedActivities.size() > 0) {
+        if (!resolvedActivities.isEmpty()) {
             ActionItem fdroidItem = new ActionItem(R.string.fdroid, R.drawable.ic_frost_fdroid);
             actionItems.add(fdroidItem);
             fdroidItem.setOnClickListener(v -> {
@@ -1751,7 +1771,10 @@ public class AppInfoFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
     private void setDataUsage(@NonNull AppInfoViewModel.AppInfo appInfo) {
         AppUsageStatsManager.DataUsage dataUsage = appInfo.dataUsage;
-        if (dataUsage == null) return;
+        if (dataUsage == null) {
+            // No permission
+            return;
+        }
         // Hide data usage if:
         // 1. OS is Android 6.0 onwards, AND
         // 2. The user is not the current user, AND
