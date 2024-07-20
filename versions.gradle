@@ -39,7 +39,7 @@ ext {
     swipe_refresh_version = "1.2.0-alpha01"
     unapkm_version = "1.3"
     webkit_version = "1.12.0-alpha02"
-    zstd_version = "1.5.6-3"
+    zstd_version = "1.5.6-4"
 
     // Test dependencies
     junit_version = "4.13.2"
