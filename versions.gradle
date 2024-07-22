@@ -6,7 +6,7 @@ ext {
     target_sdk = 35
 
     // Gradle plugins
-    agp_version = '8.7.0-alpha01'
+    agp_version = '8.7.0-alpha02'
 
     // Library dependencies
     activity_version = "1.9.0" // Draw around the display cutouts
