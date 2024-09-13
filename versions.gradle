@@ -15,7 +15,7 @@ ext {
     apksig_version = "4.4.0"
     appcompat_version = "1.7.0"
     arsclib_version = "ece5c8a43c"
-    baksmali_version = "3.0.7"
+    baksmali_version = "3.0.8"
     bouncycastle_version = "1.78.1"
     desugar_jdk_version = "2.1.2"
     documentfile_version = "1.1.0-alpha01" // AppCompat still includes the buggy implementation of documentfile library (1.0.0)
